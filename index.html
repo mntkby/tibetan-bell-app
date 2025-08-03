@@ -68,7 +68,8 @@
   .bell-image {
     width: 250px;
     height: 250px;
-    object-fit: contain;
+    object-fit: cover; /* Use cover to fill the space, might crop */
+    border-radius: 50%; /* Make images circular */
     cursor: pointer;
     user-select: none; /* Prevent text selection on tap */
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
@@ -202,7 +203,7 @@
   
   <div class="bell-selection-container">
     <button class="arrow" id="prev-bell">&lt;</button>
-    <img src="https://placehold.co/250x250/333/FFF?text=Himalayan+Bowl+Deep" alt="Himalayan Bowl Deep" class="bell-image" id="bell-to-strike">
+    <img src="https://images.unsplash.com/photo-1544365773-8982a5d518d6?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&h=400&fit=crop" alt="Himalayan Bowl Deep" class="bell-image" id="bell-to-strike">
     <button class="arrow" id="next-bell">&gt;</button>
   </div>
 
@@ -222,7 +223,7 @@
   const bells = [
     { 
       name: "Himalayan Bowl (Deep)", 
-      imageUrl: "https://placehold.co/250x250/333/FFF?text=Himalayan+Bowl+Deep", 
+      imageUrl: "https://images.unsplash.com/photo-1544365773-8982a5d518d6?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&h=400&fit=crop", 
       // YOUR GITHUB RAW AUDIO URLS ARE BELOW!
       hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/116315__garuda1982__big-singing-bowl.wav", 
       swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/116315__garuda1982__big-singing-bowl.wav", 
@@ -232,7 +233,7 @@
     },
     { 
       name: "Himalayan Bowl (Clear)", 
-      imageUrl: "https://placehold.co/250x250/444/FFF?text=Himalayan+Bowl+Clear", 
+      imageUrl: "https://images.unsplash.com/photo-1594917578794-4d8b8e0b6b0c?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&h=400&fit=crop", 
       hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/47665__arnaud-coutancier__tibetan-bowl-bol-tibet-attac.wav",
       swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/47665__arnaud-coutancier__tibetan-bowl-bol-tibet-attac.wav",
       pitchShift: 0, 
@@ -240,8 +241,8 @@
       lfoDepth: 0.05 
     },
     { 
-      name: "Crystal Bowl (Male Freq)", 
-      imageUrl: "https://placehold.co/250x250/EEE/333?text=Crystal+Bowl", 
+      name: "Crystal Bowl", 
+      imageUrl: "https://images.unsplash.com/photo-1627997525380-4d8e0b6b0c?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&h=400&fit=crop", 
       hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/449951__steffcaffrey__singing-bowl-male-frequency.wav",
       swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/449951__steffcaffrey__singing-bowl-male-frequency.wav",
       pitchShift: 2, 
@@ -249,8 +250,8 @@
       lfoDepth: 0.03 
     },
     { 
-      name: "Zen Chime (Neptun)", 
-      imageUrl: "https://placehold.co/250x250/AAA/000?text=Zen+Chime", 
+      name: "Zen Chime", 
+      imageUrl: "https://images.unsplash.com/photo-1579783900741-d3a3f0a3b0b0?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&h=400&fit=crop", 
       hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/240934__the_very_real_horst__neptun-solo-07-tibetan-singing-bowl.wav",
       swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/240934__the_very_real_horst__neptun-solo-07-tibetan-singing-bowl.wav",
       pitchShift: 5, 
@@ -259,7 +260,7 @@
     },
     { 
       name: "Tibetan Gong", 
-      imageUrl: "https://placehold.co/250x250/777/FFF?text=Tibetan+Gong", 
+      imageUrl: "https://images.unsplash.com/photo-1616839359341-3a0b8b9f0a0c?q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&h=400&fit=crop", 
       hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/718293__pazdalma__1-gong-tibetan-bowl.m4a",
       swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/718293__pazdalma__1-gong-tibetan-bowl.m4a",
       pitchShift: -10, 
@@ -290,7 +291,7 @@
   const reverb = new Tone.Reverb({
     decay: 3, 
     preDelay: 0.01,
-    wet: 0.8 // Increased wetness for more prominent reverb
+    wet: 0.9 // Increased wetness for more prominent reverb
   }).toDestination(); 
 
   // Initialize a single LFO for pitch oscillation, connected to samplers dynamically
@@ -325,6 +326,7 @@
         showMessageBox(`Error loading sound for ${bell.name}. Please check the audio file URL and sharing permissions.`, 'Error');
       }
     }).connect(reverb); // Connect hit sampler to reverb
+    hitSampler.loop = false; // Ensure hit sampler does not loop
 
     swirlSampler = new Tone.Sampler({
       urls: { C4: bell.swirlSample }, // Load the swirl sample (same as hit for now)
@@ -364,8 +366,8 @@
   // Function to update reverb decay based on slider value
   function updateReverbDecay() {
     const duration = parseFloat(durationSlider.value);
-    // Scale the slider value (10-60s) to a suitable reverb decay time (e.g., 5-30 seconds)
-    reverb.decay = 5 + (duration - 10) * (25 / 50); 
+    // Scale the slider value (10-60s) to a suitable reverb decay time (e.g., 1s to 30s)
+    reverb.decay = 1 + (duration - 10) * (29 / 50); // Min 1s decay, Max 30s decay
   }
 
   // Function to play a bell hit sound
@@ -376,7 +378,7 @@
       return;
     }
     // Play the loaded sample. 'C4' is the key the sample is mapped to.
-    hitSampler.triggerAttackRelease("C4", "2s"); // Play for 2 seconds (reverb handles sustain)
+    hitSampler.triggerAttackRelease("C4", "0.1s"); // Play for 0.1 seconds, reverb handles sustain
     
     if (navigator.vibrate) {
       navigator.vibrate(50);
