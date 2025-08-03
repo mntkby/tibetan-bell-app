@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Tibetan Bell App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+<style>
+  body {
+    background: radial-gradient(circle at center, #222222 0%, #0a0a0a 100%);
+    color: #FFFFFF;
+    font-family: 'Open Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    overflow: hidden; /* Prevent scroll on mobile */
+  }
+  .app-container {
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  h1 {
+    font-family: 'Open Sans', sans-serif;
+    color: #FFFFFF;
+    font-size: 2.5em;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-shadow: none;
+    margin-bottom: 0.25em;
+  }
+  .bell-title {
+    color: #b0b0b0;
+    font-size: 1.2em;
+    margin-top: 0;
+    min-height: 1.5em; /* Prevents layout shift */
+  }
+  .bell-selection-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 40px auto;
+    width: 100%; /* Ensure it takes full width for arrow positioning */
+  }
+  .arrow {
+    background: none;
+    border: none;
+    color: #b0b0b0;
+    font-size: 3em;
+    cursor: pointer;
+    padding: 0 15px; /* Adjust padding for better spacing */
+    transition: color 0.3s;
+    user-select: none; /* Prevent text selection on tap */
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+  }
+  .arrow:hover {
+    color: #FFFFFF;
+  }
+  .bell-image {
+    width: 250px;
+    height: 250px;
+    object-fit: contain;
+    cursor: pointer;
+    user-select: none; /* Prevent text selection on tap */
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    transition: transform 0.1s ease-out; /* For subtle feedback on tap */
+  }
+  .bell-image:active {
+    transform: scale(0.98); /* Visual feedback on press */
+  }
+
+  /* Loading indicator styles */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    color: white;
+    font-size: 1.5em;
+    flex-direction: column;
+  }
+  .spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #FFFFFF;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .start-button {
+    background-color: #FFFFFF;
+    color: #0a0a0a;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.2em;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .start-button:hover {
+    background-color: #e0e0e0;
+  }
+
+  .duration-control {
+    margin-top: 40px;
+    width: 80%; /* Make slider slightly narrower than bell */
+  }
+  .duration-control label {
+    display: block;
+    margin-bottom: 10px;
+    color: #FFFFFF;
+    font-size: 1.2em;
+    letter-spacing: 1px;
+  }
+  .duration-control input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: #555;
+    outline: none;
+    opacity: 0.8;
+    transition: opacity .2s;
+    border-radius: 4px;
+  }
+  .duration-control input[type="range"]:hover {
+    opacity: 1;
+  }
+  .duration-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #FFFFFF;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+  }
+  .duration-display {
+    color: #FFFFFF;
+    font-size: 1.5em;
+    margin-top: 10px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    h1 {
+      font-size: 2em;
+      letter-spacing: 1px;
+    }
+    .bell-title {
+      font-size: 1em;
+    }
+    .bell-image {
+      width: 200px;
+      height: 200px;
+    }
+    .arrow {
+      font-size: 2.5em;
+      padding: 0 10px;
+    }
+    .duration-control {
+      width: 90%;
+    }
+    .duration-display {
+      font-size: 1.2em;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <p>Loading sounds...</p>
+  <button class="start-button" id="start-audio-button">Start</button>
+</div>
+
+<div class="app-container">
+  <h1>Tibetan Bells</h1>
+  <p class="bell-title" id="bell-name">Himalayan Bowl (Deep)</p>
+  
+  <div class="bell-selection-container">
+    <button class="arrow" id="prev-bell">&lt;</button>
+    <img src="https://placehold.co/250x250/333/FFF?text=Himalayan+Bowl+Deep" alt="Himalayan Bowl Deep" class="bell-image" id="bell-to-strike">
+    <button class="arrow" id="next-bell">&gt;</button>
+  </div>
+
+  <div class="duration-control">
+    <label for="duration-slider">Resonance Duration</label>
+    <input type="range" id="duration-slider" min="10" max="60" value="30">
+    <div class="duration-display" id="duration-value">30 seconds</div>
+  </div>
+</div>
+
+<script>
+  // Tone.js requires an activated AudioContext, usually by user interaction.
+  let audioContextReady = false;
+
+  // --- Bell Data ---
+  // Define different bells with their names, placeholder image URLs, and audio samples
+  const bells = [
+    { 
+      name: "Himalayan Bowl (Deep)", 
+      imageUrl: "https://placehold.co/250x250/333/FFF?text=Himalayan+Bowl+Deep", 
+      hitSample: "https://drive.google.com/uc?export=download&id=1vGQ0Pc8cSlvCWwusqjRpwirg7pNgsdk4", 
+      swirlSample: "https://drive.google.com/uc?export=download&id=1vGQ0Pc8cSlvCWwusqjRpwirg7pNgsdk4", 
+      pitchShift: -5, 
+      lfoFrequency: 0.4, 
+      lfoDepth: 0.08 
+    },
+    { 
+      name: "Himalayan Bowl (Clear)", 
+      imageUrl: "https://placehold.co/250x250/444/FFF?text=Himalayan+Bowl+Clear", 
+      hitSample: "https://drive.google.com/uc?export=download&id=1GknCM35ugJ0M7GA5O2BUMIscNaDrP2L7",
+      swirlSample: "https://drive.google.com/uc?export=download&id=1GknCM35ugJ0M7GA5O2BUMIscNaDrP2L7",
+      pitchShift: 0, 
+      lfoFrequency: 0.6, 
+      lfoDepth: 0.05 
+    },
+    { 
+      name: "Crystal Bowl (Male Freq)", 
+      imageUrl: "https://placehold.co/250x250/EEE/333?text=Crystal+Bowl", 
+      hitSample: "https://drive.google.com/uc?export=download&id=1k3s7ozRfOHrmyKinDhCfURLRMGxsa90z",
+      swirlSample: "https://drive.google.com/uc?export=download&id=1k3s7ozRfOHrmyKinDhCfURLRMGxsa90z",
+      pitchShift: 2, 
+      lfoFrequency: 0.7, 
+      lfoDepth: 0.03 
+    },
+    { 
+      name: "Zen Chime (Neptun)", 
+      imageUrl: "https://placehold.co/250x250/AAA/000?text=Zen+Chime", 
+      hitSample: "https://drive.google.com/uc?export=download&id=1Pb4sbkL8YqWismom8PWEefQhGhdbZ01f",
+      swirlSample: "https://drive.google.com/uc?export=download&id=1Pb4sbkL8YqWismom8PWEefQhGhdbZ01f",
+      pitchShift: 5, 
+      lfoFrequency: 1.0, 
+      lfoDepth: 0.02 
+    },
+    { 
+      name: "Tibetan Gong", 
+      imageUrl: "https://placehold.co/250x250/777/FFF?text=Tibetan+Gong", 
+      hitSample: "https://drive.google.com/uc?export=download&id=1x-novgFBqUUqWwYMtFBL5NxjeUM0fMOM",
+      swirlSample: "https://drive.google.com/uc?export=download&id=1x-novgFBqUUqWwYMtFBL5NxjeUM0fMOM",
+      pitchShift: -10, 
+      lfoFrequency: 0.2, 
+      lfoDepth: 0.1 
+    }
+  ];
+
+  let currentBellIndex = 0;
+  let isSwirling = false;
+  let hitSampler;
+  let swirlSampler;
+  let lfo; // Global LFO for subtle pitch/amplitude modulation
+
+  // --- DOM Elements ---
+  const bellNameDisplay = document.getElementById('bell-name');
+  const prevBellButton = document.getElementById('prev-bell');
+  const nextBellButton = document.getElementById('next-bell');
+  const bellImage = document.getElementById('bell-to-strike');
+  const durationSlider = document.getElementById('duration-slider');
+  const durationValueDisplay = document.getElementById('duration-value');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  const startAudioButton = document.getElementById('start-audio-button');
+
+  // --- Tone.js Effects ---
+  Tone.Destination.volume.value = -10; // Overall volume control
+
+  const reverb = new Tone.Reverb({
+    decay: 3, 
+    preDelay: 0.01,
+    wet: 0.8 // Increased wetness for more prominent reverb
+  }).toDestination(); 
+
+  // Initialize a single LFO for pitch oscillation, connected to samplers dynamically
+  lfo = new Tone.LFO(0.5, -5, 5).start(); // Default frequency and depth, will be updated
+
+  // --- Functions ---
+
+  // Function to update the displayed bell and load its audio samples
+  async function updateBellDisplay() {
+    const bell = bells[currentBellIndex];
+    bellNameDisplay.textContent = bell.name;
+    bellImage.src = bell.imageUrl;
+    bellImage.alt = `${bell.name} Bell`;
+
+    // Dispose old samplers to prevent memory leaks
+    if (hitSampler) hitSampler.dispose();
+    if (swirlSampler) swirlSampler.dispose();
+
+    // Create new samplers for the current bell
+    hitSampler = new Tone.Sampler({
+      urls: { C4: bell.hitSample }, // Load the hit sample at C4
+      onload: () => {
+        console.log(`Loaded hit sample for ${bell.name}`);
+        // Apply initial pitch shift
+        if (bell.pitchShift !== undefined) {
+          hitSampler.set({ playbackRate: Tone.intervalToFrequencyRatio(bell.pitchShift) });
+        }
+      },
+      onerror: (error) => { // Added error handling
+        console.error(`Error loading hit sample for ${bell.name}:`, error);
+        // alert(`Error loading sound for ${bell.name}. Please check the audio file URL and sharing permissions.`); // Use alert for user feedback
+      }
+    }).connect(reverb); // Connect hit sampler to reverb
+
+    swirlSampler = new Tone.Sampler({
+      urls: { C4: bell.swirlSample }, // Load the swirl sample (same as hit for now)
+      onload: () => {
+        console.log(`Loaded swirl sample for ${bell.name}`);
+        // Apply initial pitch shift
+        if (bell.pitchShift !== undefined) {
+          swirlSampler.set({ playbackRate: Tone.intervalToFrequencyRatio(bell.pitchShift) });
+        }
+        // Set loop points for the swirl sound
+        swirlSampler.loop = true;
+        // Attempt to find a good loop region. These are arbitrary and might need fine-tuning per sample.
+        // For actual bowls, you'd find a stable sustain portion.
+        swirlSampler.loopStart = 0.1; 
+        swirlSampler.loopEnd = 0.5; 
+      },
+      onerror: (error) => { // Added error handling
+        console.error(`Error loading swirl sample for ${bell.name}:`, error);
+        // alert(`Error loading swirl sound for ${bell.name}. Please check the audio file URL and sharing permissions.`); // Use alert for user feedback
+      }
+    }).connect(reverb); // Connect swirl sampler to reverb
+
+    // Update LFO parameters for the current bell's oscillation
+    lfo.frequency.value = bell.lfoFrequency || 0.5;
+    lfo.min = -(bell.lfoDepth || 0.05) * 100; // Convert depth to detune cents
+    lfo.max = (bell.lfoDepth || 0.05) * 100;
+    
+    // Connect LFO to the detune of both samplers for pitch oscillation
+    lfo.disconnect(); // Disconnect from previous synths/samplers
+    lfo.connect(hitSampler.detune);
+    lfo.connect(swirlSampler.detune);
+
+    updateReverbDecay(); // Ensure reverb decay is set for the current bell
+  }
+
+  // Function to update reverb decay based on slider value
+  function updateReverbDecay() {
+    const duration = parseFloat(durationSlider.value);
+    // Scale the slider value (10-60s) to a suitable reverb decay time (e.g., 5-30 seconds)
+    reverb.decay = 5 + (duration - 10) * (25 / 50); 
+  }
+
+  // Function to play a bell hit sound
+  async function playBellHit() {
+    if (!hitSampler || !hitSampler.loaded) {
+      console.warn("Hit sampler not loaded yet.");
+      // Optionally show a message to the user that sound is still loading
+      return;
+    }
+    // Play the loaded sample. 'C4' is the key the sample is mapped to.
+    hitSampler.triggerAttackRelease("C4", "2s"); // Play for 2 seconds (reverb handles sustain)
+    
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  }
+
+  // Function to start the swirling sound
+  async function startSwirl() {
+    if (!swirlSampler || !swirlSampler.loaded) {
+      console.warn("Swirl sampler not loaded yet.");
+      // Optionally show a message to the user that sound is still loading
+      return;
+    }
+
+    if (!isSwirling) {
+      isSwirling = true;
+      // Start the sampler playing and looping
+      swirlSampler.triggerAttack("C4"); 
+      
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]);
+      }
+    }
+  }
+
+  // Function to stop the swirling sound
+  function stopSwirl() {
+    if (isSwirling) {
+      isSwirling = false;
+      swirlSampler.triggerRelease(); // Release the sustained note
+      
+      if (navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+    }
+  }
+
+  // --- Event Listeners ---
+
+  // Event listener for the Start button
+  startAudioButton.addEventListener('click', async () => {
+    if (!audioContextReady) {
+      await Tone.start(); // Start the audio context
+      audioContextReady = true;
+      loadingOverlay.style.display = 'none'; // Hide the loading overlay
+      // Load the first bell's sounds after audio context starts
+      await updateBellDisplay(); 
+    }
+  });
+
+  // Bell navigation
+  prevBellButton.addEventListener('click', async () => {
+    stopSwirl(); // Stop current swirl before changing bell
+    currentBellIndex = (currentBellIndex - 1 + bells.length) % bells.length;
+    await updateBellDisplay(); // Await loading of new samples
+  });
+
+  nextBellButton.addEventListener('click', async () => {
+    stopSwirl(); // Stop current swirl before changing bell
+    currentBellIndex = (currentBellIndex + 1) % bells.length;
+    await updateBellDisplay(); // Await loading of new samples
+  });
+
+  // Duration slider input - Update reverb decay here!
+  durationSlider.addEventListener('input', () => {
+    durationValueDisplay.textContent = `${durationSlider.value} seconds`;
+    updateReverbDecay(); 
+  });
+
+  // Bell interaction (tap/click and swirl)
+  bellImage.addEventListener('click', (e) => {
+    // Only play hit sound if not currently swirling (prevents double sound on touch)
+    if (!isSwirling) {
+      playBellHit();
+    }
+  });
+
+  bellImage.addEventListener('mousedown', startSwirl);
+  bellImage.addEventListener('mouseup', stopSwirl);
+  bellImage.addEventListener('mouseleave', stopSwirl);
+
+  bellImage.addEventListener('touchstart', (e) => {
+    e.preventDefault(); 
+    startSwirl();
+  }, { passive: false });
+
+  bellImage.addEventListener('touchend', (e) => {
+    // If it was a quick tap (not a swirl), play the hit sound
+    if (!isSwirling) { 
+      playBellHit();
+    }
+    stopSwirl(); 
+  });
+  bellImage.addEventListener('touchcancel', stopSwirl); 
+
+  // Initial setup (only visual display, sound init on start button click)
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set initial bell display (visuals only)
+    bellNameDisplay.textContent = bells[currentBellIndex].name;
+    bellImage.src = bells[currentBellIndex].imageUrl;
+    bellImage.alt = `${bells[currentBellIndex].name} Bell`;
+    durationValueDisplay.textContent = `${durationSlider.value} seconds`;
+  });
+</script>
+
+</body>
+</html>
