@@ -223,8 +223,9 @@
     { 
       name: "Himalayan Bowl (Deep)", 
       imageUrl: "https://placehold.co/250x250/333/FFF?text=Himalayan+Bowl+Deep", 
-      hitSample: "https://drive.google.com/uc?export=download&id=1vGQ0Pc8cSlvCWwusqjRpwirg7pNgsdk4", 
-      swirlSample: "https://drive.google.com/uc?export=download&id=1vGQ0Pc8cSlvCWwusqjRpwirg7pNgsdk4", 
+      // YOUR GITHUB RAW AUDIO URLS ARE BELOW!
+      hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/116315__garuda1982__big-singing-bowl.wav", 
+      swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/116315__garuda1982__big-singing-bowl.wav", 
       pitchShift: -5, 
       lfoFrequency: 0.4, 
       lfoDepth: 0.08 
@@ -232,8 +233,8 @@
     { 
       name: "Himalayan Bowl (Clear)", 
       imageUrl: "https://placehold.co/250x250/444/FFF?text=Himalayan+Bowl+Clear", 
-      hitSample: "https://drive.google.com/uc?export=download&id=1GknCM35ugJ0M7GA5O2BUMIscNaDrP2L7",
-      swirlSample: "https://drive.google.com/uc?export=download&id=1GknCM35ugJ0M7GA5O2BUMIscNaDrP2L7",
+      hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/47665__arnaud-coutancier__tibetan-bowl-bol-tibet-attac.wav",
+      swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/47665__arnaud-coutancier__tibetan-bowl-bol-tibet-attac.wav",
       pitchShift: 0, 
       lfoFrequency: 0.6, 
       lfoDepth: 0.05 
@@ -241,8 +242,8 @@
     { 
       name: "Crystal Bowl (Male Freq)", 
       imageUrl: "https://placehold.co/250x250/EEE/333?text=Crystal+Bowl", 
-      hitSample: "https://drive.google.com/uc?export=download&id=1k3s7ozRfOHrmyKinDhCfURLRMGxsa90z",
-      swirlSample: "https://drive.google.com/uc?export=download&id=1k3s7ozRfOHrmyKinDhCfURLRMGxsa90z",
+      hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/449951__steffcaffrey__singing-bowl-male-frequency.wav",
+      swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/449951__steffcaffrey__singing-bowl-male-frequency.wav",
       pitchShift: 2, 
       lfoFrequency: 0.7, 
       lfoDepth: 0.03 
@@ -250,8 +251,8 @@
     { 
       name: "Zen Chime (Neptun)", 
       imageUrl: "https://placehold.co/250x250/AAA/000?text=Zen+Chime", 
-      hitSample: "https://drive.google.com/uc?export=download&id=1Pb4sbkL8YqWismom8PWEefQhGhdbZ01f",
-      swirlSample: "https://drive.google.com/uc?export=download&id=1Pb4sbkL8YqWismom8PWEefQhGhdbZ01f",
+      hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/240934__the_very_real_horst__neptun-solo-07-tibetan-singing-bowl.wav",
+      swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/240934__the_very_real_horst__neptun-solo-07-tibetan-singing-bowl.wav",
       pitchShift: 5, 
       lfoFrequency: 1.0, 
       lfoDepth: 0.02 
@@ -259,8 +260,8 @@
     { 
       name: "Tibetan Gong", 
       imageUrl: "https://placehold.co/250x250/777/FFF?text=Tibetan+Gong", 
-      hitSample: "https://drive.google.com/uc?export=download&id=1x-novgFBqUUqWwYMtFBL5NxjeUM0fMOM",
-      swirlSample: "https://drive.google.com/uc?export=download&id=1x-novgFBqUUqWwYMtFBL5NxjeUM0fMOM",
+      hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/718293__pazdalma__1-gong-tibetan-bowl.m4a",
+      swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/718293__pazdalma__1-gong-tibetan-bowl.m4a",
       pitchShift: -10, 
       lfoFrequency: 0.2, 
       lfoDepth: 0.1 
@@ -320,7 +321,8 @@
       },
       onerror: (error) => { // Added error handling
         console.error(`Error loading hit sample for ${bell.name}:`, error);
-        // alert(`Error loading sound for ${bell.name}. Please check the audio file URL and sharing permissions.`); // Use alert for user feedback
+        // Using a custom message box instead of alert()
+        showMessageBox(`Error loading sound for ${bell.name}. Please check the audio file URL and sharing permissions.`, 'Error');
       }
     }).connect(reverb); // Connect hit sampler to reverb
 
@@ -341,7 +343,8 @@
       },
       onerror: (error) => { // Added error handling
         console.error(`Error loading swirl sample for ${bell.name}:`, error);
-        // alert(`Error loading swirl sound for ${bell.name}. Please check the audio file URL and sharing permissions.`); // Use alert for user feedback
+        // Using a custom message box instead of alert()
+        showMessageBox(`Error loading swirl sound for ${bell.name}. Please check the audio file URL and sharing permissions.`, 'Error');
       }
     }).connect(reverb); // Connect swirl sampler to reverb
 
@@ -410,6 +413,50 @@
       }
     }
   }
+
+  // Custom Message Box (replaces alert())
+  function showMessageBox(message, title = 'Message') {
+    const messageBox = document.createElement('div');
+    messageBox.style.position = 'fixed';
+    messageBox.style.top = '50%';
+    messageBox.style.left = '50%';
+    messageBox.style.transform = 'translate(-50%, -50%)';
+    messageBox.style.backgroundColor = '#333';
+    messageBox.style.color = '#FFF';
+    messageBox.style.padding = '20px';
+    messageBox.style.borderRadius = '8px';
+    messageBox.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
+    messageBox.style.zIndex = '1001';
+    messageBox.style.maxWidth = '300px';
+    messageBox.style.textAlign = 'center';
+
+    const msgTitle = document.createElement('h3');
+    msgTitle.textContent = title;
+    msgTitle.style.marginBottom = '10px';
+    msgTitle.style.color = '#FFD700';
+
+    const msgText = document.createElement('p');
+    msgText.textContent = message;
+    msgText.style.marginBottom = '20px';
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'OK';
+    closeButton.style.backgroundColor = '#555';
+    closeButton.style.color = '#FFF';
+    closeButton.style.border = 'none';
+    closeButton.style.padding = '10px 20px';
+    closeButton.style.borderRadius = '5px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.addEventListener('click', () => {
+      document.body.removeChild(messageBox);
+    });
+
+    messageBox.appendChild(msgTitle);
+    messageBox.appendChild(msgText);
+    messageBox.appendChild(closeButton);
+    document.body.appendChild(messageBox);
+  }
+
 
   // --- Event Listeners ---
 
