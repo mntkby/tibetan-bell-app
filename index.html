@@ -73,10 +73,14 @@
     cursor: pointer;
     user-select: none; /* Prevent text selection on tap */
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-    transition: transform 0.1s ease-out; /* For subtle feedback on tap */
+    transition: transform 0.1s ease-out, box-shadow 0.3s ease-out; /* Added box-shadow transition */
   }
   .bell-image:active {
     transform: scale(0.98); /* Visual feedback on press */
+    box-shadow: 0 0 50px rgba(255, 255, 255, 0.4), 0 0 20px rgba(255, 255, 255, 0.2) inset; /* Subtle glow */
+  }
+  .bell-image.active-glow { /* Class for sustained glow on swirl */
+    box-shadow: 0 0 60px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.3) inset;
   }
 
   /* Loading indicator styles */
@@ -86,7 +90,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: #0a0a0a; /* Solid dark background */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -94,6 +98,12 @@
     color: white;
     font-size: 1.5em;
     flex-direction: column;
+    opacity: 1;
+    transition: opacity 0.5s ease-out; /* Smooth fade out */
+  }
+  .loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none; /* Allow clicks through once hidden */
   }
   .spinner {
     border: 4px solid rgba(255, 255, 255, 0.3);
@@ -224,7 +234,6 @@
     { 
       name: "Himalayan Bowl (Deep)", 
       imageUrl: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/himalayan_bowl_deep.png", 
-      // YOUR GITHUB RAW AUDIO URLS ARE BELOW!
       hitSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/116315__garuda1982__big-singing-bowl.wav", 
       swirlSample: "https://raw.githubusercontent.com/mntkby/tibetan-bell-app/main/116315__garuda1982__big-singing-bowl.wav", 
       pitchShift: -5, 
@@ -467,7 +476,10 @@
     if (!audioContextReady) {
       await Tone.start(); // Start the audio context
       audioContextReady = true;
-      loadingOverlay.style.display = 'none'; // Hide the loading overlay
+      loadingOverlay.style.opacity = '0'; /* Start fade out */
+      loadingOverlay.addEventListener('transitionend', () => {
+        loadingOverlay.classList.add('hidden'); /* Hide after transition */
+      }, { once: true });
       // Load the first bell's sounds after audio context starts
       await updateBellDisplay(); 
     }
